@@ -84,6 +84,7 @@ class TOPBAR_MT_my_menu(bpy.types.Menu):
 # Blenderに登録するクラスリスト
 classes = (
     MYADDON_OT_stretch_vertex,
+    MYADDON_OT_add_ico_sphere,
     TOPBAR_MT_my_menu,
 )
 
