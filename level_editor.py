@@ -1,4 +1,6 @@
 import bpy
+import math
+
 
 # ブレンダーに登録するアドオン情報
 bl_info = {
@@ -21,6 +23,46 @@ def draw_menu_manual(self, context):
     
     # トップバーの「ヘルプメニュー」に項目(オペレータ)を追加
     self.layout.operator("wm.url_open_preset", text="Manual", icon="HELP")
+
+# オペレータ シーン出力
+class MYADDON_OT_export_scene(bpy.types.Operator):
+    bl_idname = "myaddon.myaddon_export_scene"
+    bl_label = "シーン出力"
+    bl_description = "シーンを出力するオペレータ"
+  
+    def execute(self, context):
+
+        print("シーン情報をExportします")
+
+        # シーン内の全オブジェクトについてループ処理を行う
+        for object in bpy.context.scene.objects:
+            print(object.type + " - " + object.name)
+            
+            # ローカルトランスフォーム行列から平行移動、回転、スケーリングを抽出
+            trans, rot, scale = object.matrix_local.decompose()
+            
+            # 回転を Quaternion から Euler（3軸での回転角）に変換
+            rot = rot.to_euler()
+            
+            # ラジアンから度数法に変換
+            rot.x = math.degrees(rot.x)
+            rot.y = math.degrees(rot.y)
+            rot.z = math.degrees(rot.z)
+            
+            print("Trans(%f,%f,%f)" % (trans.x, trans.y, trans.z) )
+            print("Rot(%f,%f,%f)" % (rot.x, rot.y, rot.z) )
+            print("Scale(%f,%f,%f)" % (scale.x, scale.y, scale.z) )
+            
+            # 親オブジェクトの名前を表示
+            if object.parent:
+                print("Parent:" + object.parent.name)
+            print()
+    
+
+        print("シーンの情報をExportしました")
+        self.report({'INFO'}, "シーンの情報をExportしました")
+
+        return {'FINISHED'}
 
 # オペレータ 頂点を伸ばす
 class MYADDON_OT_stretch_vertex(bpy.types.Operator):
@@ -72,6 +114,10 @@ class TOPBAR_MT_my_menu(bpy.types.Menu):
         
         self.layout.operator(MYADDON_OT_add_ico_sphere.bl_idname,
                              text=MYADDON_OT_add_ico_sphere.bl_label)
+        
+        # シーン出力ボタンを追加する
+        self.layout.operator(MYADDON_OT_export_scene.bl_idname,      
+                             text=MYADDON_OT_export_scene.bl_label) 
 
     # 既存のメニューにサブメニューを追加
     def submenu(self,context):
@@ -83,6 +129,7 @@ class TOPBAR_MT_my_menu(bpy.types.Menu):
 
 # Blenderに登録するクラスリスト
 classes = (
+    MYADDON_OT_export_scene,
     MYADDON_OT_stretch_vertex,
     MYADDON_OT_add_ico_sphere,
     TOPBAR_MT_my_menu,
@@ -112,7 +159,6 @@ def unregister():
     print("レベルエディタが無効化されました。")
 
     
-
 
 
 # テスト実行用コード
